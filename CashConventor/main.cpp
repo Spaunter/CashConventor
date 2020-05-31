@@ -11,6 +11,8 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 #include <map>
 #include <math.h>
 #include <commctrl.h>//for droplist
+#include<stdio.h>
+#include<sqlite3.h>
 
 #pragma comment (lib, "Winhttp.lib")
 
