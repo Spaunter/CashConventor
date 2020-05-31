@@ -3,16 +3,8 @@ name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
 processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 
-#include <iostream>
-#include <windows.h>
-#include <string>
-#include <regex>
-#include <winhttp.h>
-#include <map>
-#include <math.h>
-#include <commctrl.h>//for droplist
-#include<stdio.h>
-#include<sqlite3.h>
+#include"Header.h"
+#include"DataBase.h"
 
 #pragma comment (lib, "Winhttp.lib")
 
