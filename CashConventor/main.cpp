@@ -18,7 +18,7 @@ using namespace std;
 
 const int MAX_LENGHT = 15000;
 
-enum clientElement // набор элементов управления
+enum clientElement // user elements
 {
 	button,
 	startMoney,
@@ -26,11 +26,11 @@ enum clientElement // набор элементов управления
 	aboutApp
 };
 
-const regex regNum("^[0-9]*$");//регулярка для ввода только чисел 
-const regex regLetter("^[a-z]$");//регулярка для ввода только букв англ. строчные 
+const regex regNum("^[0-9]*$"); 
+const regex regLetter("^[a-z]$");
 
-HFONT hFont = CreateFont(20, 0, 0, 2, FW_REGULAR, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Roboto");//шрифт
-HWND hEditMoney, hComboBox; // поля для ввода
+HFONT hFont = CreateFont(20, 0, 0, 2, FW_REGULAR, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Roboto");//fonts
+HWND hEditMoney, hComboBox; 
 static float USD_CURRENCY{};
 
 map<string, double> GetValueFromHTTP() {
@@ -97,10 +97,10 @@ map<string, double> GetValueFromHTTP() {
    
     try
     {
-        cashList["RUB"]=stof(buffer.substr(buffer.find("RUB") + 56, 5));//за 10 рублей
-        cashList["EUR"] = stof(buffer.substr(buffer.find("EUR") + 55, 5));//за 1 евро
-        cashList["USD"] = stof(buffer.substr(buffer.find("USD") + 55, 5));//за 1 доллар
-        cashList["PLN"] = stof(buffer.substr(buffer.find("PLN") + 55, 5));//за 1 злотый
+        cashList["RUB"]=stof(buffer.substr(buffer.find("RUB") + 56, 5));//for 10 rub
+        cashList["EUR"] = stof(buffer.substr(buffer.find("EUR") + 55, 5));//for 1 eur
+        cashList["USD"] = stof(buffer.substr(buffer.find("USD") + 55, 5));//for 1 usd
+        cashList["PLN"] = stof(buffer.substr(buffer.find("PLN") + 55, 5));//for 1 pln 
         
     }
     catch (...)
@@ -119,13 +119,12 @@ map<string, double> GetValueFromHTTP() {
 
 
 int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmdShow)
-/*int nCmdShow - параметр отвечающий за то как будет показываться окно (свёрнуто, развёрнуто, на весь экран и т.д.).*/
 {
    
 
-    MSG msg{};                           // Структура, которая содержит в себе информацию о соообщениях (между Windows и окном или между окнами).
-    HWND hwnd{};                         // Дескриптор окна ( HANDLE указ. на объект ядра в котором храниться информация о нашем окне).
-    WNDCLASSEX wc{ sizeof(WNDCLASSEX) }; // Эта структура отвечает за некие х-ки окна (в фигурных скобках размеры).
+    MSG msg{};                          
+    HWND hwnd{};                         
+    WNDCLASSEX wc{ sizeof(WNDCLASSEX) }; 
     wc.cbClsExtra = 0;
     wc.cbWndExtra = 0;
     //wc.hbrBackground = reinterpret_cast<HBRUSH>(GetStockObject(WHITE_BRUSH));
@@ -140,7 +139,7 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
         {
         case WM_CREATE:
         {
-            //-----------------------верхнее меню-----------------------------------
+            //-----------------------header menu-----------------------------------
             HMENU hMenuBar = CreateMenu();
             HMENU hMenuAbout = CreateMenu();
            
@@ -149,7 +148,7 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
             SetMenu(hWnd, hMenuAbout);
             SetMenu(hWnd, hMenuBar);
             //-------------------------------------------------------------------------
-            //--------------выпадающие меню-------------------------------
+            //--------------drop list-------------------------------
            hComboBox = CreateWindow(
                 WC_COMBOBOX,
                 L"",
@@ -180,14 +179,14 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
 
 
             SendMessage(hComboBox, CB_SETCURSEL, (WPARAM)0, (LPARAM)0);
-            //------------------------поле количество----------------------------------
+            //------------------------count money fild----------------------------------
             HWND hTextCount = CreateWindow(
                 L"STATIC",
                 L"Введите количество",
                 WS_CHILD | WS_VISIBLE,
                 50, 20, 200, 30, hWnd, nullptr, nullptr, nullptr
             );
-            SendMessage(hTextCount, WM_SETFONT, (WPARAM)hFont, TRUE);// стиль текста
+            SendMessage(hTextCount, WM_SETFONT, (WPARAM)hFont, TRUE);
             hEditMoney = CreateWindowEx(
                 WS_EX_CLIENTEDGE,
                 L"EDIT",
@@ -196,7 +195,7 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
                 150, 55, 80, 30, hWnd, reinterpret_cast<HMENU>(clientElement::startMoney), nullptr, nullptr
             );
                        
-            //------------------------------кнопка -----------------------------------
+            //------------------------------button-----------------------------------
             HWND hButton = CreateWindow(
                 L"BUTTON",
                 L"Конвертировать",
@@ -212,33 +211,33 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
         case WM_COMMAND:
         {
             switch (LOWORD(wParam))
-            {//--------------------------------------действия на кнопку-----------------------------
+            {//--------------------------------------action on push-----------------------------
             case clientElement::button:
             {
-                //-----------------получение и пробразование данных из полей для ввода в wstring-------------------------
+                //-----------------convert in wstring-------------------------
                 wstring wStrMoney{};
                 wStrMoney.resize(MAX_LENGHT);
                 GetWindowText(hEditMoney, &wStrMoney[0], MAX_LENGHT);
                 wStrMoney.erase(remove(begin(wStrMoney), end(wStrMoney), 0), end(wStrMoney));
                
-                if (wStrMoney.empty()) // если есть пустые поля
+                if (wStrMoney.empty()) 
                 {
                     MessageBox(hWnd, L"Укажите количество валюты!", L"Ошибка", MB_ICONERROR);
                     break;
                 }
                 else
-                {// если поля не пустые
-                    //----------------------- преобразование wstring в string--------------------
+                {
+       
                     string strMoney(wStrMoney.begin(), wStrMoney.end());
                     
-                    //---------------------проверка введенных значений---------------------------
+                    //---------------------check data---------------------------
                     if (atoi(strMoney.c_str()) < 1 || !regex_match(strMoney, regNum))
                     {
                         MessageBox(hWnd, L"Неверный формат:\nСтрока должна содержать только положительные числа.", nullptr, MB_ICONERROR);
                         SetWindowText(hEditMoney, nullptr);
                         break;
                     }
-                    else {// если значения прошли проверку переводим в инт и отдаем в функцию
+                    else {
                         int intMoney = atoi((to_string(stoi(wStrMoney))).c_str());
 
                         wstring wStrTypeM{};
@@ -317,7 +316,7 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
 
             }
             break;
-            //----------------------обработки нажатий на кнопки меню-------------------------
+            //----------------------header action-------------------------
             case clientElement::aboutApp: {
                 MessageBox(hWnd, L"CASH CONVERTER v 1.0 \n\nby Maksym Homenko", L"O программе", MB_OK);
             }
@@ -335,7 +334,7 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
         return 0;
 
         }
-        return DefWindowProc(hWnd, uMsg, wParam, lParam); // вызывается в случае если сообщение не обрабатывается
+        return DefWindowProc(hWnd, uMsg, wParam, lParam);
     };
     wc.lpszClassName = L"MyAppClass";
     wc.lpszMenuName = nullptr;
@@ -343,21 +342,21 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
 
     if (!RegisterClassEx(&wc)) { return EXIT_FAILURE; }
 
-    hwnd = CreateWindow(wc.lpszClassName, L"CashCONVERTER", /*WS_OVERLAPPEDWINDOW*/ WS_SYSMENU/*только закрыть*/, 700, 300, 400, 220, nullptr, nullptr, wc.hInstance, nullptr);
+    hwnd = CreateWindow(wc.lpszClassName, L"CashCONVERTER", /*WS_OVERLAPPEDWINDOW*/ WS_SYSMENU/*only close*/, 700, 300, 400, 220, nullptr, nullptr, wc.hInstance, nullptr);
     if (hwnd == INVALID_HANDLE_VALUE) { return EXIT_FAILURE; }
 
 
 
     ShowWindow(hwnd, nCmdShow);
-    UpdateWindow(hwnd);         // перерисовка окна 
+    UpdateWindow(hwnd);        
 
-    while (GetMessage(&msg, nullptr, 0, 0)) // Цикл обработки сообщений
+    while (GetMessage(&msg, nullptr, 0, 0)) 
     {
-        TranslateMessage(&msg); // функция расшифровывает системное сообщение
-        DispatchMessage(&msg);  // функция  передаёт сообщение в оконную процедуру на обработку
+        TranslateMessage(&msg); 
+        DispatchMessage(&msg);  
     }
 
-    return static_cast<int> (msg.wParam); // возвращаемое значение точки входа
+    return static_cast<int> (msg.wParam);
 
 };
 
