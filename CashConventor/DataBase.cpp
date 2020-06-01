@@ -2,7 +2,12 @@
 
 int DataBase::createBD()
 {
-	return 0;
+	sqlite3* DB;
+	int exit = 0;
+	exit = sqlite3_open(this->dir, &DB);
+	sqlite3_close(DB);
+
+	return exit;
 }
 
 int DataBase::createTable()
