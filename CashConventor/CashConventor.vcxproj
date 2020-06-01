@@ -142,6 +142,7 @@
   <ItemGroup>
     <ClCompile Include="..\..\sql lite\sqlite-amalgamation-3320100\sqlite3.c" />
     <ClCompile Include="DataBase.cpp" />
+    <ClCompile Include="logic.cpp" />
     <ClCompile Include="main.cpp" />
   </ItemGroup>
   <ItemGroup>

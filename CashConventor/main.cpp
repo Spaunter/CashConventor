@@ -8,20 +8,8 @@ processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 #pragma comment (lib, "Winhttp.lib")
 
-using namespace std;
-
 const int MAX_LENGHT = 15000;
 
-enum clientElement // user elements
-{
-	button,
-	startMoney,
-    droplist,
-	aboutApp
-};
-
-const regex regNum("^[0-9]*$"); 
-const regex regLetter("^[a-z]$");
 
 HFONT hFont = CreateFont(20, 0, 0, 2, FW_REGULAR, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Roboto");//fonts
 HWND hEditMoney, hComboBox; 
