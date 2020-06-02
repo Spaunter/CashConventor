@@ -9,7 +9,7 @@ public:
 	const char* getDir() { return this->dir; }
 	void setDir(const char* dir) { this->dir = dir; }
 	int createBD();
-	int createTable();
+	int createTable(string sqlCommand);
 	int insertData();
 	int selectData();
 	int callback(void* NotUsed, int argc, char** argv, char** azColName);

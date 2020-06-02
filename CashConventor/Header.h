@@ -14,6 +14,8 @@
 using namespace std;
 
 bool dirExists(const string&); // function which check folder
+map<string, double> GetValueFromHTTP();
+
 
 enum clientElement { button, startMoney, droplist, aboutApp};// user elements 
 
