@@ -15,6 +15,7 @@ bool dirExists(const string& forderDir)
 map<string, double> GetValueFromHTTP() {
 
     map<string, double> cashList = { {"USD",0},{"EUR", 0},{"RUB", 0},{"PLN", 0} };
+    
     HINTERNET hSession = WinHttpOpen(L"CashConventor", WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
     if (!hSession)
     {
@@ -76,6 +77,7 @@ map<string, double> GetValueFromHTTP() {
 
     try
     {
+        
         cashList["RUB"] = stof(buffer.substr(buffer.find("RUB") + 56, 5));//for 10 rub
         cashList["EUR"] = stof(buffer.substr(buffer.find("EUR") + 55, 5));//for 1 eur
         cashList["USD"] = stof(buffer.substr(buffer.find("USD") + 55, 5));//for 1 usd

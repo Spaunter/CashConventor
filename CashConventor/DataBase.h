@@ -10,9 +10,10 @@ public:
 	void setDir(const char* dir) { this->dir = dir; }
 	int createBD();
 	int createTable(string sqlCommand);
-	int insertData();
-	int selectData();
+	int insertData(string sqlCommand);
 	int callback(void* NotUsed, int argc, char** argv, char** azColName);
+	int selectData(string sqlCommand);
+	
 private:
 
 	const char* dir;

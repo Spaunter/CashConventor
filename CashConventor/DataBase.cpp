@@ -44,17 +44,51 @@ int DataBase::createTable(string sql)
 	return 0;
 }
 
-int DataBase::insertData()
+int DataBase::insertData(string sqlCommand)
 {
-	return 0;
-}
+	sqlite3* DB;
+	char* massageError;
 
-int DataBase::selectData()
-{
+	int exit = sqlite3_open(this->dir, &DB);
+
+	exit = sqlite3_exec(DB, sqlCommand.c_str(), NULL, 0, &massageError);
+
+	if (exit != SQLITE_OK)
+	{
+		cerr << "Error insert" << endl;
+		sqlite3_free(massageError);
+	}
+	else
+	{
+		cout << "all_ok> insert" << endl;
+	}
+
 	return 0;
 }
 
 int DataBase::callback(void* NotUsed, int argc, char** argv, char** azColName)
 {
+	for (int i = 0; i < argc; i++)
+	{
+		cout << azColName[i] << " : " << argv[i] << endl;
+	}
+	cout << endl;
+
 	return 0;
 }
+
+//int DataBase::selectData(string sqlCommand)
+//{
+//	sqlite3* DB;
+//
+//
+//	int exit = sqlite3_open(this->dir, &DB);
+//
+//	string sql = "SELECT * FROM RATE_HIST_UA;";
+//
+//	sqlite3_exec(DB, sql.c_str(), callback, NULL, NULL);
+//
+//	return 0;
+//}
+
+

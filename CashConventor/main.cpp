@@ -38,7 +38,7 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
             HMENU hMenuBar = CreateMenu();
             HMENU hMenuAbout = CreateMenu();
            
-            AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)clientElement::aboutApp, L"О программе");
+            AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)clientElement::aboutApp, L"About program");
 
             SetMenu(hWnd, hMenuAbout);
             SetMenu(hWnd, hMenuBar);
@@ -142,6 +142,28 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
                         string strType(wStrTypeM.begin(), wStrTypeM.end());
 
                         map<string, double> cashList = GetValueFromHTTP();
+
+                        if (!dirExists("D:\\DBFOLDER"))// check folder 
+                        {
+                            system("mkdir D:\\DBFOLDER"); // if no folder, create
+                        }
+                        DataBase DB("d:\\DBFOLDER\\money.db"); // create DB object
+                        DB.createBD(); //create DB
+                        DB.createTable("CREATE TABLE IF NOT EXISTS RATE_HIST_UA("
+		                               "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+		                               "DATE_RATE DATE,"
+		                               "CURRENCY TEXT,"
+                                       "UNITS INTEGER,"
+                                       "RATE NUMERIC);"
+                        );
+
+                        DB.insertData(
+                            "INSERT INTO RATE_HIST_UA(DATE_RATE, CURRENCY,UNITS,RATE)"
+                            "VALUES(date('now'), 'USD', '1'," + to_string(cashList["USD"])+"),"
+                                  "(date('now'), 'EUR', '1'," + to_string(cashList["EUR"])+"),"
+                                  "(date('now'), 'PLN', '1'," + to_string(cashList["PLN"])+"),"
+                                  "(date('now'), 'RUB', '10',"+ to_string(cashList["RUB"])+");"
+                        );
 
                         if (strType == "UAH")
                         {
