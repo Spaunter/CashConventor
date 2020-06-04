@@ -2,28 +2,24 @@
 
 int DataBase::createBD()
 {
-	sqlite3* DB;
+	sqlite3* db;
 	int result = 0;
-	result = sqlite3_open(this->dir, &DB);
-	sqlite3_close(DB);
+	result = sqlite3_open(this->dir, &db);
+	sqlite3_close(db);
 
 	return result;
 }
 
 int DataBase::createTable(string sql)
 {
-	sqlite3* DB;
-	/*string sql = "CREATE TABLE IF NOT EXISTS RATE_HIST_UA("
-		"ID INTEGER PRIMARY KEY AUTOINCREMENT,"
-		"DATE_RATE DATE NOT NULL,"
-		"CURRENCY TEXT,"
-		"RATE NUMERIC);";*/
+	sqlite3* db;
+	
 	try
 	{
 		int result = 0;
-		result = sqlite3_open(this->dir, &DB);
+		result = sqlite3_open(this->dir, &db);
 		char* massageError{};
-		result = sqlite3_exec(DB, sql.c_str(), NULL, 0, &massageError);
+		result = sqlite3_exec(db, sql.c_str(), NULL, 0, &massageError);
 
 		if (result != SQLITE_OK)
 		{
@@ -35,7 +31,7 @@ int DataBase::createTable(string sql)
 			cout << "Table was created" << endl;
 		}
 
-		sqlite3_close(DB);
+		sqlite3_close(db);
 	}
 	catch (const exception & e)
 	{
@@ -46,12 +42,12 @@ int DataBase::createTable(string sql)
 
 int DataBase::insertData(string sqlCommand)
 {
-	sqlite3* DB;
+	sqlite3* db;
 	char* massageError;
 
-	int exit = sqlite3_open(this->dir, &DB);
+	int exit = sqlite3_open(this->dir, &db);
 
-	exit = sqlite3_exec(DB, sqlCommand.c_str(), NULL, 0, &massageError);
+	exit = sqlite3_exec(db, sqlCommand.c_str(), NULL, 0, &massageError);
 
 	if (exit != SQLITE_OK)
 	{
@@ -66,27 +62,41 @@ int DataBase::insertData(string sqlCommand)
 	return 0;
 }
 
-int DataBase::callback(void* NotUsed, int argc, char** argv, char** azColName)
+int DataBase::select_callback(void* p_data, int num_fields, char** p_fields, char** p_col_names)
 {
-	for (int i = 0; i < argc; i++)
-	{
-		cout << azColName[i] << " : " << argv[i] << endl;
+	Records* records = static_cast<Records*>(p_data);
+	try {
+		records->emplace_back(p_fields, p_fields + num_fields);
 	}
-	cout << endl;
-
+	catch (...) {
+		// abort select on failure, don't let exception propogate thru sqlite3 call-stack
+		return 1;
+	}
 	return 0;
+}
+
+Records DataBase::select_stmt(string sqlCommand)
+{
+	sqlite3* db;
+	Records records;
+	char* errmsg;
+	int ret = sqlite3_exec(db, sqlCommand.c_str(), select_callback, &records, &errmsg);
+	if (ret != SQLITE_OK) {
+		cerr << "Error in select statement " << sqlCommand.c_str() << "[" << errmsg << "]\n";
+	}
+	else {
+		cerr << records.size() << " records returned.\n";
+	}
+
+	return records;
 }
 
 //int DataBase::selectData(string sqlCommand)
 //{
-//	sqlite3* DB;
+//	sqlite3* db;
+//	int exit = sqlite3_open(this->dir, &db);
 //
-//
-//	int exit = sqlite3_open(this->dir, &DB);
-//
-//	string sql = "SELECT * FROM RATE_HIST_UA;";
-//
-//	sqlite3_exec(DB, sql.c_str(), callback, NULL, NULL);
+//	sqlite3_exec(db, sqlCommand.c_str(), select_callback, NULL, NULL);
 //
 //	return 0;
 //}

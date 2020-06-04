@@ -12,11 +12,12 @@ const int MAX_LENGHT = 15000;
 
 HFONT hFont = CreateFont(20, 0, 0, 2, FW_REGULAR, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Roboto");//fonts
 HWND hEditMoney, hComboBox; 
-
+DataBase DB("d:\\DBFOLDER\\money.db"); // create DB object
 
 
 int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmdShow)
 {
+   
     MSG msg{};                          
     HWND hwnd{};                         
     WNDCLASSEX wc{ sizeof(WNDCLASSEX) }; 
@@ -37,10 +38,13 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
             //-----------------------header menu-----------------------------------
             HMENU hMenuBar = CreateMenu();
             HMENU hMenuAbout = CreateMenu();
-           
+            HMENU hMenuHist = CreateMenu();
+
             AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)clientElement::aboutApp, L"About program");
+            AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)clientElement::rateHist, L"Rate History");
 
             SetMenu(hWnd, hMenuAbout);
+            SetMenu(hWnd, hMenuHist);
             SetMenu(hWnd, hMenuBar);
             //-------------------------------------------------------------------------
             //--------------drop list-------------------------------
@@ -147,7 +151,7 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
                         {
                             system("mkdir D:\\DBFOLDER"); // if no folder, create
                         }
-                        DataBase DB("d:\\DBFOLDER\\money.db"); // create DB object
+                        
                         DB.createBD(); //create DB
                         DB.createTable("CREATE TABLE IF NOT EXISTS RATE_HIST_UA("
 		                               "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
@@ -157,13 +161,16 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
                                        "RATE NUMERIC);"
                         );
 
-                        DB.insertData(
-                            "INSERT INTO RATE_HIST_UA(DATE_RATE, CURRENCY,UNITS,RATE)"
-                            "VALUES(date('now'), 'USD', '1'," + to_string(cashList["USD"])+"),"
-                                  "(date('now'), 'EUR', '1'," + to_string(cashList["EUR"])+"),"
-                                  "(date('now'), 'PLN', '1'," + to_string(cashList["PLN"])+"),"
-                                  "(date('now'), 'RUB', '10',"+ to_string(cashList["RUB"])+");"
-                        );
+                        if (cashList["USD"] != 0) { // if api dont give data
+                            DB.insertData(
+                                "INSERT INTO RATE_HIST_UA(DATE_RATE, CURRENCY,UNITS,RATE)"
+                                "VALUES(date('now'), 'USD', '1'," + to_string(cashList["USD"]) + "),"
+                                "(date('now'), 'EUR', '1'," + to_string(cashList["EUR"]) + "),"
+                                "(date('now'), 'PLN', '1'," + to_string(cashList["PLN"]) + "),"
+                                "(date('now'), 'RUB', '10'," + to_string(cashList["RUB"]) + ");"
+                            );
+                        }
+                        
 
                         if (strType == "UAH")
                         {
@@ -233,7 +240,12 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
             break;
             //----------------------header action-------------------------
             case clientElement::aboutApp: {
-                MessageBox(hWnd, L"CASH CONVERTER v 1.0 \n\nby Maksym Homenko", L"O ןנמדנאללו", MB_OK);
+                MessageBox(hWnd, L"CASH CONVERTER v 1.0 \n\nby Maksym Homenko", L"About program", MB_OK);
+            }
+            break;
+            case clientElement::rateHist: {
+               // DB.selectData("SELECT * FROM RATE_HIST_UA;");
+                MessageBox(hWnd, L"rateHist", L"Rate history", MB_OK);
             }
             break;
          

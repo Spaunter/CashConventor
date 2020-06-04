@@ -6,6 +6,7 @@
 #include <regex>
 #include <winhttp.h>
 #include <map>
+#include <vector>
 #include <math.h>
 #include <commctrl.h>//for droplist
 #include <stdio.h>
