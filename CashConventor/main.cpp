@@ -3,125 +3,21 @@ name='Microsoft.Windows.Common-Controls' version='6.0.0.0' \
 processorArchitecture='*' publicKeyToken='6595b64144ccf1df' language='*'\"")
 
 
-#include <iostream>
-#include <windows.h>
-#include <string>
-#include <regex>
-#include <winhttp.h>
-#include <map>
-#include <math.h>
-#include <commctrl.h>//for droplist
+#include"Header.h"
+#include"DataBase.h"
 
 #pragma comment (lib, "Winhttp.lib")
 
-using namespace std;
-
 const int MAX_LENGHT = 15000;
-
-enum clientElement // user elements
-{
-	button,
-	startMoney,
-    droplist,
-	aboutApp
-};
-
-const regex regNum("^[0-9]*$"); 
-const regex regLetter("^[a-z]$");
 
 HFONT hFont = CreateFont(20, 0, 0, 2, FW_REGULAR, 0, 0, 0, DEFAULT_CHARSET, OUT_DEFAULT_PRECIS, CLIP_DEFAULT_PRECIS, CLEARTYPE_QUALITY, DEFAULT_PITCH, L"Roboto");//fonts
 HWND hEditMoney, hComboBox; 
-static float USD_CURRENCY{};
-
-map<string, double> GetValueFromHTTP() {
-
-    map<string, double> cashList = { {"USD",0},{"EUR", 0},{"RUB", 0},{"PLN", 0}};
-    HINTERNET hSession = WinHttpOpen(L"CashConventor", WINHTTP_ACCESS_TYPE_AUTOMATIC_PROXY, WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
-    if (!hSession) 
-    {
-        return cashList;
-    }
-
-    HINTERNET hConnect = WinHttpConnect(hSession,  L"bank.gov.ua", INTERNET_DEFAULT_HTTPS_PORT, 0);
-    if (!hConnect)
-    {
-        return cashList;
-    }
-
-    HINTERNET hRequest = WinHttpOpenRequest(hConnect, L"GET", L"/NBU_Exchange/exchange", NULL, WINHTTP_NO_REFERER, WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
-    if (!hRequest)
-    {
-        return cashList;
-    }
-
-    WinHttpSendRequest(hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, WINHTTP_NO_REQUEST_DATA, 0, 0, 0);
-
-    WinHttpReceiveResponse(hRequest, NULL);
-
-    DWORD dwSize{}, dwDowloaded{};
-    char* pszOutBuffer{};
-    string buffer{};
-    string value{};
-    do
-    {
-        dwSize = 0;
-        if (!WinHttpQueryDataAvailable(hRequest, &dwSize))
-        {
-            cout << "Error" << GetLastError();
-        }
-
-        pszOutBuffer = new char[dwSize + 1];
-        if (!pszOutBuffer)
-        {
-            dwSize = 0;
-        }
-        else {
-            ZeroMemory(pszOutBuffer, dwSize + 1);
-            if (!WinHttpReadData(hRequest, (LPVOID)pszOutBuffer, dwSize, &dwDowloaded))
-            {
-                cout << "Error-2" << GetLastError();
-
-            }
-            else {
-                printf("%s", pszOutBuffer);
-            }
-            buffer += pszOutBuffer;
-            delete[]pszOutBuffer;
-        }
-
-    } while (dwSize>0);
-    WinHttpCloseHandle(hRequest);
-    WinHttpCloseHandle(hConnect);
-    WinHttpCloseHandle(hSession);
-
-   
-    try
-    {
-        cashList["RUB"]=stof(buffer.substr(buffer.find("RUB") + 56, 5));//for 10 rub
-        cashList["EUR"] = stof(buffer.substr(buffer.find("EUR") + 55, 5));//for 1 eur
-        cashList["USD"] = stof(buffer.substr(buffer.find("USD") + 55, 5));//for 1 usd
-        cashList["PLN"] = stof(buffer.substr(buffer.find("PLN") + 55, 5));//for 1 pln 
-        
-    }
-    catch (...)
-    {
-        return cashList;
-    }
-
-    
-
-    return cashList;
-}
-
-
-
-
+DataBase DB("d:\\DBFOLDER\\money.db"); // create DB object
 
 
 int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmdShow)
 {
    
-
     MSG msg{};                          
     HWND hwnd{};                         
     WNDCLASSEX wc{ sizeof(WNDCLASSEX) }; 
@@ -142,10 +38,13 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
             //-----------------------header menu-----------------------------------
             HMENU hMenuBar = CreateMenu();
             HMENU hMenuAbout = CreateMenu();
-           
-            AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)clientElement::aboutApp, L"Î ןנמדנאללו");
+            HMENU hMenuHist = CreateMenu();
+
+            AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)clientElement::aboutApp, L"About program");
+            AppendMenu(hMenuBar, MF_POPUP, (UINT_PTR)clientElement::rateHist, L"Rate History");
 
             SetMenu(hWnd, hMenuAbout);
+            SetMenu(hWnd, hMenuHist);
             SetMenu(hWnd, hMenuBar);
             //-------------------------------------------------------------------------
             //--------------drop list-------------------------------
@@ -248,6 +147,31 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
 
                         map<string, double> cashList = GetValueFromHTTP();
 
+                        if (!dirExists("D:\\DBFOLDER"))// check folder 
+                        {
+                            system("mkdir D:\\DBFOLDER"); // if no folder, create
+                        }
+                        
+                        DB.createBD(); //create DB
+                        DB.createTable("CREATE TABLE IF NOT EXISTS RATE_HIST_UA("
+		                               "ID INTEGER PRIMARY KEY AUTOINCREMENT,"
+		                               "DATE_RATE DATE,"
+		                               "CURRENCY TEXT,"
+                                       "UNITS INTEGER,"
+                                       "RATE NUMERIC);"
+                        );
+
+                        if (cashList["USD"] != 0) { // if api dont give data
+                            DB.insertData(
+                                "INSERT INTO RATE_HIST_UA(DATE_RATE, CURRENCY,UNITS,RATE)"
+                                "VALUES(date('now'), 'USD', '1'," + to_string(cashList["USD"]) + "),"
+                                "(date('now'), 'EUR', '1'," + to_string(cashList["EUR"]) + "),"
+                                "(date('now'), 'PLN', '1'," + to_string(cashList["PLN"]) + "),"
+                                "(date('now'), 'RUB', '10'," + to_string(cashList["RUB"]) + ");"
+                            );
+                        }
+                        
+
                         if (strType == "UAH")
                         {
                             double UAHtoUSD = intMoney / cashList["USD"];
@@ -306,9 +230,7 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
                             LPCWSTR textNew = (LPCWSTR)textOut.c_str();
                             MessageBox(hWnd, textNew, L"Êףנס ÍÁÓ", MB_ICONINFORMATION);
                         }
-
-                       
-                        
+  
 
                     }
 
@@ -318,7 +240,12 @@ int CALLBACK  wWinMain(HINSTANCE hInstance, HINSTANCE, PWSTR szCmdLine, int nCmd
             break;
             //----------------------header action-------------------------
             case clientElement::aboutApp: {
-                MessageBox(hWnd, L"CASH CONVERTER v 1.0 \n\nby Maksym Homenko", L"O ןנמדנאללו", MB_OK);
+                MessageBox(hWnd, L"CASH CONVERTER v 1.0 \n\nby Maksym Homenko", L"About program", MB_OK);
+            }
+            break;
+            case clientElement::rateHist: {
+               // DB.selectData("SELECT * FROM RATE_HIST_UA;");
+                MessageBox(hWnd, L"rateHist", L"Rate history", MB_OK);
             }
             break;
          
